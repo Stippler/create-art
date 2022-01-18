@@ -2,9 +2,10 @@ import numpy as np
 import torch
 
 class Blender:
-    def __init__(self, base, styles):
+    def __init__(self, base, styles, device):
         self.base = base
         self.styles = styles
+        self.device = device
         
     def blend_models(self, mix):
         resolutions =  [4*2**x for x in range(int(np.log2(1024)-1))]

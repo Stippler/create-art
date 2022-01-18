@@ -1,12 +1,11 @@
 import { PhotoCamera } from "@mui/icons-material";
-import { Button, Slider, Stack, Typography } from "@mui/material";
+import { Button, CircularProgress, Grow, Slider, TextField, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import Paper from "@mui/material/Paper";
-import styled from "@mui/styled-engine";
-import Box from "@mui/system/Box";
 import React, { useEffect, useState } from "react";
-import { MySlider } from "./Slider";
 import UploadButton from "./UploadButton";
+import Image from 'next/image'
+import Box from "@mui/system/Box";
 
 interface StyleMix {
     name: string,
@@ -16,7 +15,9 @@ interface StyleMix {
 
 export default function ImageEditor() {
     const [id, setId] = useState<string | null>(null);
-
+    const [projected, setProjected] = useState<boolean>(false);
+    const [steps, setSteps] = useState<number>(10);
+    const [loading, setLoading] = useState<boolean>(false)
 
 
     const [mix, setMix] = useState<StyleMix[]>([
@@ -38,6 +39,29 @@ export default function ImageEditor() {
     ]);
 
 
+    if (loading) {
+        return (
+            <Box sx={{ display: 'flex' }}>
+                <CircularProgress />
+            </Box>
+        )
+    }
+
+    const project = (id: string, steps: number) => {
+        console.log('start projecting');
+        fetch(`http://127.0.0.1:5000/api/project/${id}`, {
+            method: 'POST',
+            body: JSON.stringify({ steps: steps })
+        }).then(resp => resp)
+            .then(resp => {
+                console.log(resp);
+                setProjected(true);
+            })
+            .catch(resp => {
+                console.log(resp);
+            });
+    }
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         e.preventDefault()
         console.log('send file')
@@ -46,15 +70,19 @@ export default function ImageEditor() {
         if (fileList != null && fileList.length > 0) {
             const formData = new FormData();
             formData.append('image', fileList[0]);
+            setLoading(true);
             fetch(`http://127.0.0.1:5000/api/upload`, {
                 method: 'POST',
                 body: formData
             }).then(resp => resp.json())
                 .then(resp => {
                     console.log(resp);
+                    setLoading(false);
                     setId(resp.id);
+                    project(resp.id, 10);
                 })
                 .catch(resp => {
+                    setLoading(false);
                     console.log(resp);
                 });
         }
@@ -65,6 +93,7 @@ export default function ImageEditor() {
             <UploadButton onChange={handleChange} />
         );
     }
+
 
     const uploadMix = () => {
         fetch(`http://127.0.0.1:5000/api/mix/${id}`, {
@@ -135,47 +164,87 @@ export default function ImageEditor() {
         </Grid>
     );
 
-    return (
-        <>
-            <Paper
-                elevation={3}
-                sx={{
-                    padding: 2
-                }}>
-                <img src={`http://localhost:5000/api/stream/${id}`} alt="image stream" width="512" height="512" />
-            </Paper>
-            <br />
-            <Paper
-                elevation={3}
-                sx={{
-                    padding: 2
-                }}>
-                <Grid container spacing={2} justifyContent='space-between'>
-                    <Grid item xs={6}>
-                        <img src={`http://127.0.0.1:5000/api/face/${id}`} alt="base image" width="256" height="256" />
-                    </Grid>
-                    <Grid item xs={6}>
-                        <img src={`http://127.0.0.1:5000/api/face/${id}`} alt="base image" width="256" height="256" />
-                    </Grid>
-                </Grid>
-            </Paper>
-            <br />
-            <Paper
-                elevation={3}
-                sx={{
-                    padding: 2
-                }}>
-                <Grid container justifyContent='center' spacing={3}>
-                    <Grid item xs={12}>
+    const buttons = (
+        <Paper
+            elevation={3}
+            sx={{
+                padding: 2
+            }}>
+            <Grid item xs={12}>
+                <Grid container spacing={3}>
+                    <Grid item xs={4}>
                         <UploadButton onChange={handleChange} />
                     </Grid>
-                    <Grid item xs={12}>
-                        <Grid container spacing={3}>
-                            {sliders}
-                        </Grid>
+                    <Grid item xs={4}>
+                        <Button variant="contained" fullWidth disabled={isNaN(steps) || steps < 10} onClick={() => {
+                            setProjected(false);
+                            project(id, steps);
+                        }}>
+
+                            Recalibrate
+                        </Button>
+                    </Grid>
+                    <Grid item xs={4}>
+                        <TextField
+                            id="outlined-number"
+                            label="Steps"
+                            type="number"
+                            size="small"
+                            InputLabelProps={{
+                                shrink: true,
+                            }}
+                            value={steps}
+                            onChange={(e) => {
+                                const num = parseInt(e.target.value);
+                                setSteps(num);
+                                console.log(num);
+                            }}
+                        />
                     </Grid>
                 </Grid>
-            </Paper>
+            </Grid>
+        </Paper>
+    );
+
+    const stream = (
+        <Paper
+            elevation={3}
+            sx={{
+                padding: 2
+            }}>
+            <img src={`http://localhost:5000/api/stream/${id}`} alt="image stream" width='100%' height='auto' />
+        </Paper>
+    );
+
+    const slidersView = (
+        <Paper
+            elevation={3}
+            sx={{
+                padding: 2
+            }}>
+            <Grid container justifyContent='center' spacing={2}>
+
+                <Grid item xs={12}>
+                    <Grid container spacing={3}>
+                        {sliders}
+                    </Grid>
+                </Grid>
+            </Grid>
+        </Paper>
+    );
+
+    return (
+        <>
+            <Grow in={!loading}>{stream}</Grow>
+            <br />
+            <Grow in={projected}>{buttons}</Grow>
+            <br />
+            <Grow in={!loading}
+                style={{ transformOrigin: '0 0 0' }}
+                {...(!loading ? { timeout: 1000 } : {})}
+            >
+                {slidersView}
+            </Grow>
         </>
     );
 }

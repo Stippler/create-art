@@ -35,16 +35,14 @@ device = torch.device('cuda')
 class ProjectorWorker:
 
     def __init__(self):
-        f = dnnlib.util.open_url('pickels/ffhq.pkl')
-        G = legacy.load_network_pkl(f)['G_ema'].to(device)
-        self.projector = Projector(G, device)
+        self.projector = Projector(device)
 
-    def run_projection(self, target_pil, num_steps=1000):
-        return self.run_projection(target_pil, num_steps)
+    def run_projection(self, target_pil, num_steps=50):
+        return self.projector.run_projection(target_pil, num_steps)
 
 
 base_path = 'data/pickels/ffhq.pkl'
-styles = ['data/pickels/cartoon.pkl', 'data/pickels/metfaces.pkl']
+style_paths = ['data/pickels/cartoon.pkl', 'data/pickels/metfaces.pkl']
 
 G_kwargs = dnnlib.EasyDict()
 f = dnnlib.util.open_url(base_path)
@@ -53,7 +51,7 @@ base = model
 base.to(device)
 styles = [base]
 
-for style_path in []:
+for style_path in style_paths:
     f = dnnlib.util.open_url(style_path)
     model = legacy.load_network_pkl(f, **G_kwargs)['G_ema']  # type: ignore
     model.to(device)
@@ -62,7 +60,7 @@ for style_path in []:
 
 class StyleWorker:
     def __init__(self):
-        self.blender = Blender(copy.deepcopy(base), styles)
+        self.blender = Blender(copy.deepcopy(base).to(device), styles, device)
 
     def generate(self, latent_vector, mix):
         self.blender.blend_models(mix)
@@ -78,4 +76,3 @@ class StyleWorker:
         img = self.generate(latent_vector, mix)
         _, frame = cv2.imencode('.jpg', cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
         return frame.tobytes()
-

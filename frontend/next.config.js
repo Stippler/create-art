@@ -4,12 +4,15 @@
 // }
 // next.config.js
 module.exports = {
-    async rewrites() {
-        return [
-          {
-            source: '/api/:path*',
-            destination: 'http://localhost:5000/:path*',
-          },
-        ]
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: 'http://localhost:5000/:path*',
       },
-  };
+    ]
+  },
+  images: {
+    domains: ['localhost:5000', 'localhost'],
+  },
+};

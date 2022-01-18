@@ -2,8 +2,9 @@ from io import BytesIO
 from flask import Flask, request, jsonify, send_file, Response
 from flask_cors import CORS
 import numpy as np
+from threading import Thread
 
-from queue import Queue
+from queue import Full, Queue
 from workers import StyleWorker, FaceWorker, ProjectorWorker
 
 from PIL import Image
@@ -27,6 +28,7 @@ face_workers.put(FaceWorker())
 
 projector_workers = Queue()
 projector_workers.put(ProjectorWorker())
+projector_workers.put(ProjectorWorker())
 
 ##########
 # Stream #
@@ -36,7 +38,7 @@ projector_workers.put(ProjectorWorker())
 class Stream:
 
     def __init__(self, target_img, latent_vector):
-        self.queue = Queue()
+        self.queue = Queue(10)
         self.target_img = target_img
         self.latent_vector = latent_vector
         self.mix = [
@@ -79,7 +81,9 @@ def upload_image():
         response = jsonify(id=img_id)
 
         style_streams[img_id] = Stream(img, np.load('data/test.npy'))
-        style_streams[img_id].queue.put(img)
+        img_io = BytesIO()
+        img.save(img_io, 'JPEG', quality=100)
+        style_streams[img_id].queue.put(img_io.getvalue())
         print(f'sending response: {response}')
         return response
     else:
@@ -99,25 +103,52 @@ def gen_stream(id):
     print(f'starting stream with id {id}')
     while True:
         img_bytes = style_streams[id].queue.get()
-        yield (b'--frame\r\nContent-Type: image/jpeg\r\n\r\n' + img_bytes + b'\r\n')
-
+        # yield (b'--frame\r\nContent-Type: image/jpeg\r\n\r\n' + img_bytes + b'\r\n')
+        yield (b'--frame\r\n'
+               b'Content-Type:image/jpeg\r\n'
+               b'Content-Length: ' + f"{len(img_bytes)}".encode() + b'\r\n'
+               b'\r\n' + img_bytes + b'\r\n')
+        yield (b'--frame\r\n'
+               b'Content-Type:image/jpeg\r\n'
+               b'Content-Length: ' + f"{len(img_bytes)}".encode() + b'\r\n'
+               b'\r\n' + img_bytes + b'\r\n')
 
 @app.route('/api/stream/<id>')
 def stream(id):
     return Response(gen_stream(id),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
-
-@app.route('/api/project/<id>', methods=['GET'])
+@app.route('/api/project/<id>', methods=['POST'])
 def project(id):
+    print(id)
+    body = request.get_json(force=True)
     stream = style_streams[id]
     projector_worker = projector_workers.get()
-    for latent_vector in projector_worker.run_projection(stream.target_img):
-        style_worker = style_workers.get()
-        img_bytes = style_worker.generate_bytes(latent_vector, stream.mix)
-        stream.queue.put(img_bytes)
+    print('start projection')
+    queue = Queue(10)
+    running = True
+    def run(queue):
+        try:
+            while running:
+                style_worker = style_workers.get()
+                latent_vector = queue.get()
+                img_bytes = style_worker.generate_bytes(latent_vector, stream.mix)
+                style_workers.put(style_worker)
+                stream.queue.put(img_bytes, timeout=1)
+        except Full:
+            print('end stream')
 
+    thread = Thread(target=run, args=(queue,))
+    thread.start()
+    try:
+        for latent_vector in projector_worker.run_projection(stream.target_img, body['steps']):
+            stream.latent_vector = latent_vector
+            queue.put(latent_vector, timeout=1)
+    except Full:
+        print('end projection')
+    running = False
     projector_workers.put(projector_worker)
+    return 'successfull', 200
 
 
 @app.route('/api/mix/<id>', methods=['POST'])
@@ -137,7 +168,7 @@ def mix(id):
     stream.mix = layer_weights
     worker = style_workers.get()
     img_bytes = worker.generate_bytes(stream.latent_vector, layer_weights)
-    style_streams[id].put(img_bytes)
+    style_streams[id].queue.put(img_bytes)
     style_workers.put(worker)
 
     return 'successfull', 200

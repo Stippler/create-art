@@ -5,7 +5,7 @@ import Box from '@mui/material/Box';
 import Link from 'components/Link';
 import ProTip from 'components/ProTip';
 import Copyright from 'components/Copyright';
-import { Grid, Paper } from '@mui/material';
+import { CircularProgress, Grid, Paper } from '@mui/material';
 import React from 'react';
 import { MySlider } from 'components/Slider';
 import UploadButton from 'components/UploadButton';
@@ -22,11 +22,7 @@ const Home: NextPage = () => {
         alignItems: 'center',
       }}
     >
-      <Typography variant="h4" component="h1" gutterBottom>
-        Style Transfer: Create Art
-      </Typography>
       <ImageEditor />
-      <Copyright />
     </Box>
   );
 };

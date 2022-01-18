@@ -26,7 +26,7 @@ export default function UploadButton({ onChange }: Props) {
                 multiple type="file"
                 onChange={onChange}
             />
-            <Button variant="contained" component="span">
+            <Button variant="contained" component="span" fullWidth>
                 <Stack direction="row" alignItems="center" spacing={1}>
                     <PhotoCamera />
                     <Typography>Upload</Typography>

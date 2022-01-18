@@ -48,7 +48,7 @@ export default function Layout(props: Props) {
       <AppBar>
         <Toolbar>
           <Typography variant="h6" component="div">
-            Scroll to see button
+            Style Transfer - Create Art
           </Typography>
         </Toolbar>
       </AppBar>

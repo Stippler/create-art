@@ -12,9 +12,7 @@ from tqdm.auto import tqdm
 import legacy
 
 class Projector:
-    def __init__(self, G, device):
-        G = copy.deepcopy(G).eval().requires_grad_(False).to(device) # type: ignore
-        self.G = G
+    def __init__(self, device):
         # Load VGG16 feature detector.
         url = 'data/pickels/metrics/vgg16.pt'
         f =  dnnlib.util.open_url(url)
@@ -39,7 +37,7 @@ class Projector:
         assert target.shape == (G.img_channels, G.img_resolution, G.img_resolution)
 
         # Compute w stats.
-        z_samples = np.random.RandomState(123).randn(w_avg_samples, G.z_dim)
+        z_samples = np.random.randn(w_avg_samples, G.z_dim)
         w_samples = G.mapping(torch.from_numpy(z_samples).to(device), None)  # [N, L, C]
         w_samples = w_samples[:, :1, :].cpu().numpy().astype(np.float32)       # [N, 1, C]
         w_avg = np.mean(w_samples, axis=0, keepdims=True)      # [1, 1, C]
@@ -63,9 +61,7 @@ class Projector:
             buf[:] = torch.randn_like(buf)
             buf.requires_grad = True
 
-        pbar = tqdm(range(num_steps))
-        pbar.set_description('Finding Latent Vector')
-        for step in pbar:
+        for step in range(num_steps):
             # Learning rate schedule.
             t = step / num_steps
             w_noise_scale = w_std * initial_noise_factor * max(0.0, 1.0 - t / noise_ramp_length) ** 2
@@ -108,7 +104,7 @@ class Projector:
             optimizer.step()
 
             # Save projected W for each optimization step.
-            yield w_opt.detach()[0].cpu().numpy()
+            yield w_opt.detach()[0].repeat([1, G.mapping.num_ws, 1]).cpu().numpy()
 
             # Normalize noise.
             with torch.no_grad():
@@ -116,18 +112,20 @@ class Projector:
                     buf -= buf.mean()
                     buf *= buf.square().mean().rsqrt()
 
-    def run_projection(self, target_pil, num_steps=1000):
+    def run_projection(self, target_pil, num_steps=500):
         """
         Projects a given image into latent space
         """
+
+        f = dnnlib.util.open_url('pickels/ffhq.pkl')
+        G = legacy.load_network_pkl(f)['G_ema'].eval().requires_grad_(False).to(self.device)
 
         target_uint8 = np.array(target_pil, dtype=np.uint8)
 
         # Optimize projection.
         return self.project(
-            self.G,
+            G,
             target=torch.tensor(target_uint8.transpose([2, 0, 1]), device=self.device), # pylint: disable=not-callable
             num_steps=num_steps,
             device=self.device,
-            verbose=True
         )
