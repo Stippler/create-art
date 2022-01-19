@@ -61,6 +61,7 @@ for style_path in style_paths:
 class StyleWorker:
     def __init__(self):
         self.blender = Blender(copy.deepcopy(base).to(device), styles, device)
+        self.blender.generate(np.load('data/test.npy'))
 
     def generate(self, latent_vector, mix):
         self.blender.blend_models(mix)

@@ -131,7 +131,7 @@ def project(id):
         try:
             while running:
                 style_worker = style_workers.get()
-                latent_vector = queue.get()
+                latent_vector = queue.get(timeout=1)
                 img_bytes = style_worker.generate_bytes(latent_vector, stream.mix)
                 style_workers.put(style_worker)
                 stream.queue.put(img_bytes, timeout=1)
@@ -230,3 +230,6 @@ def gen_example():
 def examplestream():
     return Response(gen_example(),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0')
