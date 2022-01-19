@@ -70,7 +70,7 @@ def upload_image():
 
     worker = face_workers.get()
 
-    img = Image.open(file.stream)
+    img = Image.open(file.stream).convert('RGB')
     ret = False
     try:
         ret, img = worker.extract_face(img)
