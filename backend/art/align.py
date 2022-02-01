@@ -1,14 +1,14 @@
 from typing import List
 import numpy as np
-import dlib
 import PIL
 from scipy.ndimage import gaussian_filter
+import dlib
 
 class FaceDetector:
 
     def __init__(self):
         self.detector = dlib.get_frontal_face_detector()
-        self.shape_predictor = dlib.shape_predictor('pickels/shape_predictor_68_face_landmarks.dat')
+        self.shape_predictor = dlib.shape_predictor('data/shape_predictor_68_face_landmarks.dat')
 
     def image_align(self, img, face_landmarks, output_size=1024, transform_size=4096, enable_padding=True, x_scale=1, y_scale=1, em_scale=0.1, alpha=False):
         # Align function from FFHQ dataset pre-processing step

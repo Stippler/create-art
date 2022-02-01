@@ -1,15 +1,9 @@
-from time import perf_counter
-import copy
-from time import perf_counter
 import numpy as np
-import PIL.Image
 import torch
 import torch.nn.functional as F
-import dnnlib
+import dnnlib 
 import torch.nn.functional as F
-import copy
-from tqdm.auto import tqdm
-import legacy
+import art.legacy as legacy
 
 class Projector:
     def __init__(self, device):
@@ -117,7 +111,7 @@ class Projector:
         Projects a given image into latent space
         """
 
-        f = dnnlib.util.open_url('pickels/ffhq.pkl')
+        f = dnnlib.util.open_url('data/pickels/ffhq.pkl')
         G = legacy.load_network_pkl(f)['G_ema'].eval().requires_grad_(False).to(self.device)
 
         target_uint8 = np.array(target_pil, dtype=np.uint8)

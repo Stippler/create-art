@@ -13,7 +13,19 @@ import copy
 import numpy as np
 import torch
 import dnnlib
-from torch_utils import misc
+
+def named_params_and_buffers(module):
+    assert isinstance(module, torch.nn.Module)
+    return list(module.named_parameters()) + list(module.named_buffers())
+
+def copy_params_and_buffers(src_module, dst_module, require_all=False):
+    assert isinstance(src_module, torch.nn.Module)
+    assert isinstance(dst_module, torch.nn.Module)
+    src_tensors = {name: tensor for name, tensor in named_params_and_buffers(src_module)}
+    for name, tensor in named_params_and_buffers(dst_module):
+        assert (name in src_tensors) or (not require_all)
+        if name in src_tensors:
+            tensor.copy_(src_tensors[name].detach()).requires_grad_(tensor.requires_grad)
 
 #----------------------------------------------------------------------------
 
@@ -55,7 +67,7 @@ def load_network_pkl(f, force_fp16=False):
                 kwargs.conv_clamp = 256
             if kwargs != old.init_kwargs:
                 new = type(old)(**kwargs).eval().requires_grad_(False)
-                misc.copy_params_and_buffers(old, new, require_all=True)
+                copy_params_and_buffers(old, new, require_all=True)
                 data[key] = new
     return data
 
@@ -86,7 +98,7 @@ def _collect_tf_params(tf_net):
 #----------------------------------------------------------------------------
 
 def _populate_module_params(module, *patterns):
-    for name, tensor in misc.named_params_and_buffers(module):
+    for name, tensor in named_params_and_buffers(module):
         found = False
         value = None
         for pattern, value_fn in zip(patterns[0::2], patterns[1::2]):

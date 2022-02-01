@@ -111,11 +111,13 @@ export default function ImageEditor() {
             });
     };
 
+
+
     const sliders = mix.map((style, i) =>
         <Grid item xs={4} key={i}>
             <Grid container spacing={1}>
                 <Grid item xs={12}>
-                    <Typography>
+                    <Typography variant="h5">
                         {style.name}
                     </Typography>
                 </Grid>
@@ -140,24 +142,33 @@ export default function ImageEditor() {
                 </Grid>
                 {style.layerWeights.map((weight, j) =>
                     <Grid item xs={12} key={j}>
-                        <Slider
-                            step={0.01}
-                            min={0.0}
-                            max={1.0}
-                            value={weight}
-                            size="small"
-                            aria-label="Small"
-                            onChange={(e, val) => {
-                                val = val as number;
-                                if (val !== weight) {
-                                    let newMix = [...mix];
-                                    newMix[i].layerWeights[j] = val;
-                                    setMix(newMix);
-                                    uploadMix();
-                                }
-                            }}
-                            valueLabelDisplay="auto"
-                        />
+                        <Grid container>
+                            <Grid item xs={12}>
+                                <Typography>
+                                    Layer {j + 1}
+                                </Typography>
+                            </Grid>
+                            <Grid item xs={12}>
+                                <Slider
+                                    step={0.01}
+                                    min={0.0}
+                                    max={1.0}
+                                    value={weight}
+                                    size="small"
+                                    aria-label="Small"
+                                    onChange={(e, val) => {
+                                        val = val as number;
+                                        if (val !== weight) {
+                                            let newMix = [...mix];
+                                            newMix[i].layerWeights[j] = val;
+                                            setMix(newMix);
+                                            uploadMix();
+                                        }
+                                    }}
+                                    valueLabelDisplay="auto"
+                                />
+                            </Grid>
+                        </Grid>
                     </Grid>
                 )}
             </Grid>
@@ -172,19 +183,20 @@ export default function ImageEditor() {
             }}>
             <Grid item xs={12}>
                 <Grid container spacing={3}>
-                    <Grid item xs={4}>
+                    <Grid item xs={6}>
                         <UploadButton onChange={handleChange} />
                     </Grid>
-                    <Grid item xs={4}>
+                    <Grid item xs={6}>
                         <Button variant="contained" fullWidth disabled={isNaN(steps) || steps < 10} onClick={() => {
-                            setProjected(false);
-                            project(id, steps);
+                            const link = document.createElement("a");
+                            link.download = `${id}.jpg`;
+                            link.href = `http://127.0.0.1:5000/api/download/${id}`;
+                            link.click();
                         }}>
-
-                            Recalibrate
+                            Download
                         </Button>
                     </Grid>
-                    <Grid item xs={4}>
+                    <Grid item xs={6}>
                         <TextField
                             id="outlined-number"
                             label="Steps"
@@ -197,13 +209,21 @@ export default function ImageEditor() {
                             onChange={(e) => {
                                 const num = parseInt(e.target.value);
                                 setSteps(num);
-                                console.log(num);
                             }}
+                            fullWidth
                         />
+                    </Grid>
+                    <Grid item xs={6}>
+                        <Button variant="contained" fullWidth disabled={isNaN(steps) || steps < 10} onClick={() => {
+                            setProjected(false);
+                            project(id, steps);
+                        }}>
+                            Recalibrate
+                        </Button>
                     </Grid>
                 </Grid>
             </Grid>
-        </Paper>
+        </Paper >
     );
 
     const stream = (
@@ -212,7 +232,14 @@ export default function ImageEditor() {
             sx={{
                 padding: 2
             }}>
-            <img src={`http://localhost:5000/api/stream/${id}`} alt="image stream" width='100%' height='auto' />
+            <Grid container spacing={3}>
+                <Grid item md={6} xs={12}>
+                    <img src={`http://localhost:5000/api/face/${id}`} alt="image stream" width='100%' height='auto' />
+                </Grid>
+                <Grid item md={6} xs={12}>
+                    <img src={`http://localhost:5000/api/stream/${id}`} alt="image stream" width='100%' height='auto' />
+                </Grid>
+            </Grid>
         </Paper>
     );
 
@@ -223,12 +250,7 @@ export default function ImageEditor() {
                 padding: 2
             }}>
             <Grid container justifyContent='center' spacing={2}>
-
-                <Grid item xs={12}>
-                    <Grid container spacing={3}>
-                        {sliders}
-                    </Grid>
-                </Grid>
+                {sliders}
             </Grid>
         </Paper>
     );

@@ -3,13 +3,11 @@ from flask import Flask, request, jsonify, send_file, Response
 from flask_cors import CORS
 import numpy as np
 from threading import Thread
-
 from queue import Full, Queue
-from workers import StyleWorker, FaceWorker, ProjectorWorker
-
 from PIL import Image
-
 import uuid
+
+from art.workers import StyleWorker, FaceWorker, ProjectorWorker
 
 app = Flask(__name__)
 CORS(app)
@@ -149,6 +147,14 @@ def project(id):
     running = False
     projector_workers.put(projector_worker)
     return 'successfull', 200
+
+@app.route('/api/download/<id>', methods=['GET'])
+def download(id):
+    stream = style_streams[id]
+    worker = style_workers.get()
+    img_bytes = worker.generate_bytes(stream.latent_vector, stream.mix)
+    style_workers.put(worker)
+    return send_file(BytesIO(img_bytes), mimetype='image/jpeg', as_attachment=True, attachment_filename=f'{id}.jpg')
 
 
 @app.route('/api/mix/<id>', methods=['POST'])
