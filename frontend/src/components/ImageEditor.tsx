@@ -122,6 +122,9 @@ export default function ImageEditor() {
                     </Typography>
                 </Grid>
                 <Grid item xs={12}>
+                    <Typography variant="caption">
+                        Global
+                    </Typography>
                     <Slider
                         step={0.01}
                         min={0.0}
@@ -143,31 +146,27 @@ export default function ImageEditor() {
                 {style.layerWeights.map((weight, j) =>
                     <Grid item xs={12} key={j}>
                         <Grid container>
-                            <Grid item xs={12}>
-                                <Typography>
-                                    Layer {j + 1}
-                                </Typography>
-                            </Grid>
-                            <Grid item xs={12}>
-                                <Slider
-                                    step={0.01}
-                                    min={0.0}
-                                    max={1.0}
-                                    value={weight}
-                                    size="small"
-                                    aria-label="Small"
-                                    onChange={(e, val) => {
-                                        val = val as number;
-                                        if (val !== weight) {
-                                            let newMix = [...mix];
-                                            newMix[i].layerWeights[j] = val;
-                                            setMix(newMix);
-                                            uploadMix();
-                                        }
-                                    }}
-                                    valueLabelDisplay="auto"
-                                />
-                            </Grid>
+                            <Typography variant="caption">
+                                Layer {j + 1}
+                            </Typography>
+                            <Slider
+                                step={0.01}
+                                min={0.0}
+                                max={1.0}
+                                value={weight}
+                                size="small"
+                                aria-label="Small"
+                                onChange={(e, val) => {
+                                    val = val as number;
+                                    if (val !== weight) {
+                                        let newMix = [...mix];
+                                        newMix[i].layerWeights[j] = val;
+                                        setMix(newMix);
+                                        uploadMix();
+                                    }
+                                }}
+                                valueLabelDisplay="auto"
+                            />
                         </Grid>
                     </Grid>
                 )}
