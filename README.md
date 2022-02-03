@@ -7,22 +7,10 @@ different domains allows us to create high-quality synthetic imaged from arbitra
 This repository contains an application that enables real-time manipulation
 of a face by interpolating the weights of multiple StyleGANs on a layer basis.
 
-## Usage
+[![Depth Comparison](images/thumbnail.png)](https://www.youtube.com/watch?v=786dEdgnqC4)
 
-First use the upload button to send the target image to the backend.
 
-![image](images/upload.png)
-
-The application will automatically detect faces and extract them into the needed format.
-The uploaded image is displayed on the left side as comparison. The result of the projection and style mix is displayed in the right image. Additionally, if you want to upload a new image, download the HD (1024x1024 pixel) result image or create a new projection with arbitrary amount of iterations you can do so with the buttons below the visualization as displayed in following figure:
-
-![results](images/results.png)
-
-The application performs a linear combination of the weight of multiple StyleGANs. You can alter the weights for the linear combination by changing the sliders at the bottom of the webapplication. To change all weights at once, use the global slider. If you want to change the weights of individual layers you can do so by changing the layer sliders.
-
-![style-mix](images/style-mix.png)
-
-## Installation and Setup
+## Installation
 
 ### Backend
 
@@ -68,6 +56,23 @@ npm start
 ```
 to build and start the frontend.
 
+
+
+
+## Usage
+
+First use the upload button to send the target image to the backend.
+
+![image](images/upload.png)
+
+The application will automatically detect faces and extract them into the needed format.
+The uploaded image is displayed on the left side as comparison. The result of the projection and style mix is displayed in the right image. Additionally, if you want to upload a new image, download the HD (1024x1024 pixel) result image or create a new projection with arbitrary amount of iterations you can do so with the buttons below the visualization as displayed in following figure:
+
+![results](images/results.png)
+
+The application performs a linear combination of the weight of multiple StyleGANs. You can alter the weights for the linear combination by changing the sliders at the bottom of the webapplication. To change all weights at once, use the global slider. If you want to change the weights of individual layers you can do so by changing the layer sliders.
+
+![style-mix](images/style-mix.png)
 
 
 
