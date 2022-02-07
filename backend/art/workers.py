@@ -10,8 +10,41 @@ from art.projector import Projector
 from art.blender import Blender
 from art.align import FaceDetector
 import art.legacy as legacy
+import os
+import urllib.request
+import art.drive as drive
 
 warnings.filterwarnings('ignore')
+
+if not os.path.isdir('data/pickels'):
+    os.mkdir('data/pickels')
+
+if not os.path.isdir('data/pickels/metrics'):
+    os.mkdir('data/pickels/metrics')
+
+if not os.path.exists('data/pickels/metrics/vgg16.pt'):
+    print('Downloading vgg16 pickel...')
+    urllib.request.urlretrieve(
+        "https://nvlabs-fi-cdn.nvidia.com/stylegan2-ada-pytorch/pretrained/metrics/vgg16.pt",
+        'data/pickels/metrics/vgg16.pt')
+
+if not os.path.exists('data/pickels/ffhq.pkl'):
+    print('Downloading ffhq pickel...')
+    urllib.request.urlretrieve(
+        "https://nvlabs-fi-cdn.nvidia.com/stylegan2-ada-pytorch/pretrained/ffhq.pkl",
+        'data/pickels/ffhq.pkl')
+
+if not os.path.exists('data/pickels/metfaces.pkl'):
+    print('Downloading metfaces pickel...')
+    urllib.request.urlretrieve(
+        "https://nvlabs-fi-cdn.nvidia.com/stylegan2-ada-pytorch/pretrained/metfaces.pkl",
+        'data/pickels/metfaces.pkl')
+
+if not os.path.exists('data/pickels/cartoon.pkl'):
+    print('Downloading cartoon pickel...')
+    drive.download(
+        "19BYm4V1twkEZbbVC1ryq1fcCY76Hhp6U",
+        'data/pickels/cartoon.pkl')
 
 device = torch.device('cuda')
 
@@ -30,7 +63,6 @@ for style_path in style_paths:
     model = legacy.load_network_pkl(f, **G_kwargs)['G_ema']  # type: ignore
     model.to(device)
     styles.append(model)
-
 
 class FaceWorker:
     def __init__(self):
