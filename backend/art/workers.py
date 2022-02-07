@@ -43,7 +43,7 @@ if not os.path.exists('data/pickels/metfaces.pkl'):
 if not os.path.exists('data/pickels/cartoon.pkl'):
     print('Downloading cartoon pickel...')
     drive.download(
-        "19BYm4V1twkEZbbVC1ryq1fcCY76Hhp6U",
+        "1Mw2YDrwyc8JX7MbZIdFNCf5v62tErrH8",
         'data/pickels/cartoon.pkl')
 
 device = torch.device('cuda')
