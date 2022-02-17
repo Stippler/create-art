@@ -32,7 +32,7 @@ to start the flask backend.
 ### Frontend
 
 The frontend was tested using the node 16.
-The node version manager (nvm) is an easy way to setup node and switch between versions easly.
+The node version manager (nvm) is an easy way to setup node and switch between versions.
 
 Use:
 ```

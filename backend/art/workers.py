@@ -42,9 +42,15 @@ if not os.path.exists('data/pickels/metfaces.pkl'):
 
 if not os.path.exists('data/pickels/cartoon.pkl'):
     print('Downloading cartoon pickel...')
-    drive.download(
-        "1Mw2YDrwyc8JX7MbZIdFNCf5v62tErrH8",
+    urllib.request.urlretrieve(
+        "https://owncloud.tuwien.ac.at/index.php/s/tE509GUorHUufPg/download",
         'data/pickels/cartoon.pkl')
+
+if not os.path.exists('data/shape_predictor_68_face_landmarks.dat'):
+    print('Downloading shape predictor...')
+    urllib.request.urlretrieve(
+        "https://owncloud.tuwien.ac.at/index.php/s/Cq06KSypHIQEbrd/download",
+        'data/shape_predictor_68_face_landmarks.dat')
 
 device = torch.device('cuda')
 
