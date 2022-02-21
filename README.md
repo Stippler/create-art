@@ -14,16 +14,23 @@ of a face by interpolating the weights of multiple StyleGANs on a layer basis.
 
 ### Backend
 
-Use:
+If you want to use conda, you can setup the dependencies with:
 ```
 cd backend
 conda env create -f environment.yml
 conda activate stylegan2
 ```
-to install the dependencies.
+
+If you prefer virtual environments use:
+
+```
+cd backend
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt -f https://download.pytorch.org/whl/torch_stable.html
+```
 
 Use
-
 ```
 python -m art.main
 ```
@@ -47,21 +54,39 @@ nvm use 16
 ```
 to install and use the right version.
 
-Use
+Next you need to specify the backend address in the environment file of the frontend.
+First create a file named `.env.local` in the frontend folder:
+
 ```
 cd frontend
+vim .env.local
+```
+
+and insert following content:
+
+```
+NEXT_PUBLIC_HOSTNAME=...
+NEXT_PUBLIC_PORT=5000
+NEXT_PUBLIC_HOST=http://$NEXT_PUBLIC_HOSTNAME:$NEXT_PUBLIC_PORT
+```
+
+Replace the ... with the private IPv4 address of the backend.
+For example 192.168.0.143.
+You can find your local ip address with `ipconfig`, `ifconfig` or `ip a`.
+
+Finally, use
+```
 npm install
 npm run build
 npm start
 ```
 to build and start the frontend.
 
-
-
-
 ## Usage
 
-First use the upload button to send the target image to the backend.
+First access the frontend by typing in `http://...:3000`.
+Insert the private ip address of the frontend instead of the ...
+Use the upload button to send the target image to the backend.
 
 ![image](images/upload.png)
 

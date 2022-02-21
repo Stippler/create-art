@@ -1,17 +1,11 @@
 import type { NextPage } from 'next';
-import Container from '@mui/material/Container';
-import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
-import Link from 'components/Link';
-import ProTip from 'components/ProTip';
-import Copyright from 'components/Copyright';
-import { CircularProgress, Grid, Paper } from '@mui/material';
-import React from 'react';
-import { MySlider } from 'components/Slider';
-import UploadButton from 'components/UploadButton';
 import ImageEditor from 'components/ImageEditor';
 
+
+
 const Home: NextPage = () => {
+  console.log(process.env.NEXT_PUBLIC_HOST);
   return (
     <Box
       sx={{
@@ -22,7 +16,7 @@ const Home: NextPage = () => {
         alignItems: 'center',
       }}
     >
-      <ImageEditor />
+      <ImageEditor host={process.env.NEXT_PUBLIC_HOST as string} />
     </Box>
   );
 };

@@ -13,7 +13,17 @@ interface StyleMix {
     layerWeights: number[]
 }
 
-export default function ImageEditor() {
+interface ImageEditorProps {
+    host: string
+}
+
+export async function getServerSideProps() {
+    return {
+        props: {}, // will be passed to the page component as props
+    }
+}
+
+export default function ImageEditor({ host }: ImageEditorProps) {
     const [id, setId] = useState<string | null>(null);
     const [projected, setProjected] = useState<boolean>(false);
     const [steps, setSteps] = useState<number>(10);
@@ -49,7 +59,7 @@ export default function ImageEditor() {
 
     const project = (id: string, steps: number) => {
         console.log('start projecting');
-        fetch(`http://127.0.0.1:5000/api/project/${id}`, {
+        fetch(`${host}/api/project/${id}`, {
             method: 'POST',
             body: JSON.stringify({ steps: steps })
         }).then(resp => resp)
@@ -71,7 +81,7 @@ export default function ImageEditor() {
             const formData = new FormData();
             formData.append('image', fileList[0]);
             setLoading(true);
-            fetch(`http://127.0.0.1:5000/api/upload`, {
+            fetch(`${host}/api/upload`, {
                 method: 'POST',
                 body: formData
             }).then(resp => resp.json())
@@ -96,7 +106,7 @@ export default function ImageEditor() {
 
 
     const uploadMix = () => {
-        fetch(`http://127.0.0.1:5000/api/mix/${id}`, {
+        fetch(`${host}/api/mix/${id}`, {
             method: 'POST',
             body: JSON.stringify({
                 weights: mix.map(style => style.weight),
@@ -189,7 +199,7 @@ export default function ImageEditor() {
                         <Button variant="contained" fullWidth disabled={isNaN(steps) || steps < 10} onClick={() => {
                             const link = document.createElement("a");
                             link.download = `${id}.jpg`;
-                            link.href = `http://127.0.0.1:5000/api/download/${id}`;
+                            link.href = `${host}/api/download/${id}`;
                             link.click();
                         }}>
                             Download
@@ -233,10 +243,10 @@ export default function ImageEditor() {
             }}>
             <Grid container spacing={3}>
                 <Grid item md={6} xs={12}>
-                    <img src={`http://localhost:5000/api/face/${id}`} alt="image stream" width='100%' height='auto' />
+                    <img src={`${host}/api/face/${id}`} alt="image stream" width='100%' height='auto' />
                 </Grid>
                 <Grid item md={6} xs={12}>
-                    <img src={`http://localhost:5000/api/stream/${id}`} alt="image stream" width='100%' height='auto' />
+                    <img src={`${host}/api/stream/${id}`} alt="image stream" width='100%' height='auto' />
                 </Grid>
             </Grid>
         </Paper>
