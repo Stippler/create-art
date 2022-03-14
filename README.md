@@ -21,7 +21,11 @@ conda env create -f environment.yml
 conda activate stylegan2
 ```
 
-If you prefer virtual environments use:
+If you prefer virtual environments you need python 3.8 and the correct cuda/cudnn setup.
+This repo was tested with cuda 11.1.
+For the correct cudnn version you can use the [compability matrix](https://docs.nvidia.com/deeplearning/cudnn/support-matrix/index.html) from NVIDIA.
+This project uses pytorch 1.8 with cuda support.
+use:
 
 ```
 cd backend
